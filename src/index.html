@@ -1,14 +1,122 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My First Parcel App</title>
-  <link rel="stylesheet" href="style.css">
-  <script src="app.js"></script>
+  <title>Week 1: Tourism</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css">
+  <link rel="stylesheet" href="week1.css">
+  <script src="https://code.iconify.design/2/2.1.0/iconify.min.js"></script>
+  <script type="module" src="week1.js"></script>
 </head>
-<body>
-  <h1>Hello, World!</h1>
+
+<body id="app">
+  <nav>
+    <a class="logo" href="#">
+      <img src="../assets/logo_en.png" alt="T-Go">
+      <div class="spacer"></div>
+      <img src="../assets/logo_tw.png" alt="T-Go">
+    </a>
+    <div class="icons">
+      <a title="首頁" @click="changeToShow('all')">
+        <span class="iconify" data-icon="ant-design:home-outlined"></span>
+        <span class="icon-text">首頁</span>
+      </a>
+      <a title="旅宿" @click="changeToShow('hotels')">
+        <span class="iconify" data-icon="ic:outline-bed"></span>
+        <span class="icon-text">旅宿</span>
+      </a>
+      <a title="餐飲" @click="changeToShow('foods')">
+        <span class="iconify" data-icon="fluent:bowl-chopsticks-20-regular"></span>
+        <span class="icon-text">餐飲</span>
+      </a>
+      <a title="活動" @click="changeToShow('activities')">
+        <span class="iconify" data-icon="akar-icons:face-very-happy"></span>
+        <span class="icon-text">活動</span>
+      </a>
+      <a title="收藏" @click="changeToShow('liked')">
+        <span class="iconify" data-icon="icon-park-outline:like"></span>
+        <span class="icon-text">收藏</span>
+      </a>
+      <a title="登入/註冊">
+        <span class="iconify" data-icon="ant-design:login-outlined"></span>
+        <span class="icon-text">登入/註冊</span>
+      </a>
+    </div>
+  </nav>
+  <section class="search-area">
+    <div class="search-row">
+      <div></div>
+      <div class="search-title">
+        你想去哪裡？
+      </div>
+      <div></div>
+    </div>
+    <div class="search-row" v-if="!showingLiked">
+      <div class="search-row-50">
+        <label for="county">縣市</label>
+        <input v-model="citySelected" type="text" id="county" class="btn btnInput" @click="showCities" readonly>
+        <div class="dropdownContainer" v-if="showCity">
+          <div class="dropdownOpt" v-for="opt in cityOpts" :key="opt.value" @click="selectCity(opt)">
+            {{ opt.label }}
+          </div>
+        </div>
+      </div>
+      <div class="search-row-50">
+        <label for="month">月份</label>
+        <input v-model="monthSelected" type="text" id="month" class="btn btnInput" @click="showMonths" readonly>
+        <div class="dropdownContainer" v-if="showMonth">
+          <div class="dropdownOpt" v-for="opt in monthOpts" :key="opt.value" @click="selectMonth(opt)">
+            {{ opt.label }}
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="search-row" v-if="!showingLiked">
+      <div class="search-row-75">
+        <label for="search">關鍵字</label>
+        <input v-model="searchString" type="text" id="search" class="btn btnInput" placeholder="親子、女性獨遊...等">
+      </div>
+      <div class="search-row-25">
+        <div class="op0">搜尋</div>
+        <button class="btn btnClick" @click="search">
+          <span class="iconify" data-icon="akar-icons:arrow-right"></span>
+        </button>
+      </div>
+    </div>
+  </section>
+  <main>
+    <section class="cards" v-for="topic in topicsShown" :key="topic.value">
+      <h3 :id="topic.value">{{ topic.label }}</h3>
+      <div class="cards-row">
+        <div class="card" v-for="data in topic.dataArr" :key="data.ID">
+          <div class="card-img">
+            <img :src="data.Picture.PictureUrl1" :alt="data.Picture.PictureDescription1">
+            <div v-if="!data.liked" class="like" @click="toggleLike(data)">
+              <span class="iconify" data-icon="ci:heart-outline"></span>
+            </div>
+            <div v-if="data.liked" class="liked" @click="toggleLike(data)">
+              <span class="iconify" data-icon="ci:heart-fill"></span>
+            </div>
+          </div>
+          <div class="description">
+            <h4 class="name">{{ data.Name }}</h4>
+            <div class="area"><span class="iconify" data-icon="ri:map-pin-2-line"></span>{{ getArea(data, topic) }}
+            </div>
+            <div class="intro">{{ data.Description }}</div>
+          </div>
+        </div>
+      </div>
+      <div class="more-row" v-if="!showingLiked">
+        <div :class="topic.moreClass" @click="moreClicked(topic)">
+          <span class="iconify" data-icon="akar-icons:arrow-right"></span>
+        </div>
+      </div>
+    </section>
+  </main>
+  <footer>Copyright © 2021 T-Go</footer>
 </body>
+
 </html>
