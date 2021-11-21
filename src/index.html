@@ -13,7 +13,29 @@
 </head>
 
 <body id="app">
+  <div class="borrowReturn">
+    <button :class="['borrowBtn', isBorrow ? 'active' : 'non-active']" :disabled="isBorrow" @click="toggleBorrow()">租車</button>
+    <button :class="['returnBtn', isBorrow ? 'non-active' : 'active']" :disabled="!isBorrow" @click="toggleBorrow()">還車</button>
+  </div>
   <div id="map"></div>
+  <div v-show="showDetail" class="details">
+    <span :class="['ball', status.color]"></span>{{status.text}}
+    <div class="details-name">{{name.Zh_tw}}</div>
+    <div class="lighter">{{name.En}}</div>
+    <div>{{address.Zh_tw}}</div>
+    <div class="lighter">{{address.En}}</div>
+    <div>更新時間：{{updateTime}}</div>
+    <div class="box-row">
+      <span :class="['borrowReturnBox', isBorrow ? 'active' : 'non-active']">
+        <div class="borrowReturnText">可借車輛</div>
+        <div class="borrowReturnNum">{{available.borrow}}</div>
+      </span>
+      <span :class="['borrowReturnBox', isBorrow ? 'non-active' : 'active']">
+        <div class="borrowReturnText">可停車位</div>
+        <div class="borrowReturnNum">{{available.return}}</div>
+      </span>
+    </div>
+  </div>
 </body>
 
 </html>
