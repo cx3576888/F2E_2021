@@ -2,6 +2,8 @@ import jsSHA from 'jssha';
 import axios from 'axios';
 import { createApp } from 'vue/dist/vue.esm-browser';
 import L from '../node_modules/leaflet/dist/leaflet';
+import '../assets/bear-blue.png';
+import '../assets/bear-gray.png';
 
 // https://github.com/ptxmotc/Sample-code/blob/master/Node.js/sample.js
 const getAuthorizationHeader = function () {
@@ -115,7 +117,7 @@ const app = createApp({
 app.mount('#app');
 
 function constructMap(currPosition) {
-  map = L.map('map', {
+  const map = L.map('map', {
     center: currPosition,
     zoom: 17,
   });
