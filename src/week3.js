@@ -151,6 +151,7 @@ const app = createApp({
       { id: 22, value: 'LienchiangCounty', label: '連江縣' },
       { id: -1, value: 'others', label: '其他', defaultShow: true, otherSelected: false },
     ]);
+    let selectedCity = allCities.value[0];
     const cities = computed(() => {
       return allCities.value.filter(c => c.defaultShow);
     });
@@ -163,8 +164,17 @@ const app = createApp({
       city.selected = true;
       if (clickOthers) {
         showAllCities.value = !showAllCities.value;
+        if (!city.otherSelected) {
+          selectedCity = {};
+          doSearch();
+        }
       } else {
+        if (selectedCity.id === city.id) {
+          return;
+        }
         showAllCities.value = false;
+        selectedCity = city;
+        doSearch();
       }
       const otherBtn = allCities.value[allCities.value.length - 1];
       if (selectOtherCity) {
@@ -175,6 +185,36 @@ const app = createApp({
       if (!selectOtherCity && !clickOthers) {
         otherBtn.otherSelected = false;
         otherBtn.label = '其他';
+      }
+    }
+    const searchString = ref('');
+    let searchDebounce;
+    const searchResults = ref([]);
+    function inputChanged() {
+      clearTimeout(searchDebounce);
+      searchDebounce = setTimeout(() => {
+        doSearch();
+      }, 1000);
+    }
+    function doSearch() {
+      if (!selectedCity.value || !searchString.value) {
+        return;
+      }
+      getList(selectedCity.value, false, searchString.value)
+        .then(response => {
+          response.data.forEach(bus => {
+            bus.firstLast = timeFormat(bus.SubRoutes[0]);
+          });
+          searchResults.value = response.data;
+        })
+    }
+    function timeFormat(subRoute) {
+      const first = subRoute.FirstBusTime;
+      const last = subRoute.LastBusTime;
+      if (!first || !last) {
+        return '點擊查看詳細資料';
+      } else {
+        return `${first.slice(0, 2)}:${first.slice(2, 4)} - ${last.slice(0, 2)}:${last.slice(2, 4)}`;
       }
     }
     onMounted(() => {
@@ -189,6 +229,9 @@ const app = createApp({
       cities,
       otherCities,
       selectCity,
+      searchString,
+      searchResults,
+      inputChanged,
     };
   }
 });

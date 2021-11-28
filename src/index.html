@@ -50,38 +50,20 @@
             </div>
           </div>
           <div class="search-field">公車號碼：</div>
-          <input type="text" class="search-input" placeholder="搜尋站牌名稱">
+          <input v-model.trim="searchString" @input="inputChanged"
+            type="text" class="search-input" placeholder="搜尋站牌名稱">
         </div>
       </div>
       <div class="search-results row-rightmost">
         <div class="results-title">公車搜尋結果</div>
         <div class="row result-row">
-          <div class="row one-result clickable" @click="seeDetail('11')">
-            <div class="result-name">11</div>
+          <div v-for="res in searchResults" :key="res.RouteUID"
+            @click="seeDetail(res.RouteUID)"
+            class="row one-result clickable">
+            <div class="result-name">{{res.RouteName.Zh_tw}}</div>
             <div class="row-rightmost result-basics">
-              <div class="result-start-stop">萬華 - 松仁路</div>
-              <div class="result-first-last">06:00 - 22:00</div>
-            </div>
-          </div>
-          <div class="row one-result clickable" @click="seeDetail('295')">
-            <div class="result-name">295</div>
-            <div class="row-rightmost result-basics">
-              <div class="result-start-stop">捷運動物園站 - 臺北車站</div>
-              <div class="result-first-last">05:30 - 23:00</div>
-            </div>
-          </div>
-          <div class="row one-result clickable" @click="seeDetail('11')">
-            <div class="result-name">11</div>
-            <div class="row-rightmost result-basics">
-              <div class="result-start-stop">萬華 - 松仁路</div>
-              <div class="result-first-last">06:00 - 22:00</div>
-            </div>
-          </div>
-          <div class="row one-result clickable" @click="seeDetail('295')">
-            <div class="result-name">295</div>
-            <div class="row-rightmost result-basics">
-              <div class="result-start-stop">捷運動物園站 - 臺北車站</div>
-              <div class="result-first-last">05:30 - 23:00</div>
+              <div class="result-start-stop">{{res.DepartureStopNameZh}} - {{res.DestinationStopNameZh}}</div>
+              <div class="result-first-last">{{res.firstLast}}</div>
             </div>
           </div>
         </div>
