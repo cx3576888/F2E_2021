@@ -34,25 +34,20 @@
         <div class="search-tab-content">
           <div class="search-field">搭乘城市：</div>
           <div class="row city-btns">
-            <div class="city-btn clickable city-btn-square city-selected">台北
-              <img class="icon" src="../assets/icon_checked.png" alt="已選擇">
+            <div v-for="city in cities" :key="city.id"
+              @click="selectCity(city, false)"
+              :class="['city-btn', 'clickable', 'city-btn-square', {'city-selected': city.selected}]"
+            >{{city.label}}
+              <div v-if="city.otherSelected" class="other-selected">其他</div>
+              <img v-if="city.selected && city.otherSelected !== false" class="icon" src="../assets/icon_checked.png" alt="已選擇">
             </div>
-            <div class="city-btn clickable city-btn-square">台中</div>
-            <div class="city-btn clickable city-btn-square">高雄</div>
-            <div class="city-btn clickable city-btn-square">台南</div>
-            <div class="city-btn clickable city-btn-square city-btn-others" @click="toggleShowAllCities">其他</div>
           </div>
           <div class="row city-btns city-more" v-if="showAllCities">
-            <div class="city-btn clickable">新竹縣</div>
-            <div class="city-btn clickable">苗栗縣</div>
-            <div class="city-btn clickable">彰化縣</div>
-            <div class="city-btn clickable">南投縣</div>
-            <div class="city-btn clickable">雲林縣</div>
-            <div class="city-btn clickable">嘉義縣</div>
-            <div class="city-btn clickable">嘉義市</div>
-            <div class="city-btn clickable">屏東縣</div>
-            <div class="city-btn clickable">宜蘭縣</div>
-            <div class="city-btn clickable">花蓮縣</div>
+            <div v-for="city in otherCities" :key="city.id"
+              @click="selectCity(city, true)"
+              :class="['city-btn', 'clickable', {'city-selected': city.selected}]"
+            >{{city.label}}
+            </div>
           </div>
           <div class="search-field">公車號碼：</div>
           <input type="text" class="search-input" placeholder="搜尋站牌名稱">

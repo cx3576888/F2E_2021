@@ -1,6 +1,6 @@
 import jsSHA from 'jssha';
 import axios from 'axios';
-import { createApp, ref, onMounted } from '../node_modules/vue/dist/vue.esm-browser';
+import { createApp, ref, onMounted, computed } from '../node_modules/vue/dist/vue.esm-browser';
 import L from 'leaflet';
 
 // https://github.com/ptxmotc/Sample-code/blob/master/Node.js/sample.js
@@ -22,31 +22,6 @@ const busApi = axios.create({
   baseURL: 'https://ptx.transportdata.tw/MOTC/v2/Bus',
   headers: getAuthorizationHeader(),
 });
-
-const allCitys = [
-  { id: 1, value: 'Taipei', label: '臺北市' },
-  { id: 2, value: 'NewTaipei', label: '新北市' },
-  { id: 3, value: 'Taoyuan', label: '桃園市' },
-  { id: 4, value: 'Taichung', label: '臺中市' },
-  { id: 5, value: 'Tainan', label: '臺南市' },
-  { id: 6, value: 'Kaohsiung', label: '高雄市' },
-  { id: 7, value: 'Keelung', label: '基隆市' },
-  { id: 8, value: 'Hsinchu', label: '新竹市' },
-  { id: 9, value: 'HsinchuCounty', label: '新竹縣' },
-  { id: 10, value: 'MiaoliCounty', label: '苗栗縣' },
-  { id: 11, value: 'ChanghuaCounty', label: '彰化縣' },
-  { id: 12, value: 'NantouCounty', label: '南投縣' },
-  { id: 13, value: 'YunlinCounty', label: '雲林縣' },
-  { id: 14, value: 'ChiayiCounty', label: '嘉義縣' },
-  { id: 15, value: 'Chiayi', label: '嘉義市' },
-  { id: 16, value: 'PingtungCounty', label: '屏東縣' },
-  { id: 17, value: 'YilanCounty', label: '宜蘭縣' },
-  { id: 18, value: 'HualienCounty', label: '花蓮縣' },
-  { id: 19, value: 'TaitungCounty', label: '臺東縣' },
-  { id: 20, value: 'KinmenCounty', label: '金門縣' },
-  { id: 21, value: 'PenghuCounty', label: '澎湖縣' },
-  { id: 22, value: 'LienchiangCounty', label: '連江縣' },
-];
 
 const getList = function (city, includeContain, searchStr) {
   const url = `/Route/City/${city}`;
@@ -149,9 +124,58 @@ const app = createApp({
       console.log('go back to search page');
       isSearchPage.value = true;
     }
+
     const showAllCities = ref(false);
-    function toggleShowAllCities() {
-      showAllCities.value = !showAllCities.value;
+    const allCities = ref([
+      { id: 1, value: 'Taipei', label: '臺北市', defaultShow: true, selected: true },
+      { id: 2, value: 'NewTaipei', label: '新北市' },
+      { id: 3, value: 'Taoyuan', label: '桃園市' },
+      { id: 4, value: 'Taichung', label: '臺中市', defaultShow: true },
+      { id: 5, value: 'Tainan', label: '臺南市', defaultShow: true },
+      { id: 6, value: 'Kaohsiung', label: '高雄市', defaultShow: true },
+      { id: 7, value: 'Keelung', label: '基隆市' },
+      { id: 8, value: 'Hsinchu', label: '新竹市' },
+      { id: 9, value: 'HsinchuCounty', label: '新竹縣' },
+      { id: 10, value: 'MiaoliCounty', label: '苗栗縣' },
+      { id: 11, value: 'ChanghuaCounty', label: '彰化縣' },
+      { id: 12, value: 'NantouCounty', label: '南投縣' },
+      { id: 13, value: 'YunlinCounty', label: '雲林縣' },
+      { id: 14, value: 'ChiayiCounty', label: '嘉義縣' },
+      { id: 15, value: 'Chiayi', label: '嘉義市' },
+      { id: 16, value: 'PingtungCounty', label: '屏東縣' },
+      { id: 17, value: 'YilanCounty', label: '宜蘭縣' },
+      { id: 18, value: 'HualienCounty', label: '花蓮縣' },
+      { id: 19, value: 'TaitungCounty', label: '臺東縣' },
+      { id: 20, value: 'KinmenCounty', label: '金門縣' },
+      { id: 21, value: 'PenghuCounty', label: '澎湖縣' },
+      { id: 22, value: 'LienchiangCounty', label: '連江縣' },
+      { id: -1, value: 'others', label: '其他', defaultShow: true, otherSelected: false },
+    ]);
+    const cities = computed(() => {
+      return allCities.value.filter(c => c.defaultShow);
+    });
+    const otherCities = computed(() => {
+      return allCities.value.filter(c => !c.defaultShow);
+    });
+    function selectCity(city, selectOtherCity) {
+      const clickOthers = city.id === -1;
+      allCities.value.forEach(c => c.selected = false);
+      city.selected = true;
+      if (clickOthers) {
+        showAllCities.value = !showAllCities.value;
+      } else {
+        showAllCities.value = false;
+      }
+      const otherBtn = allCities.value[allCities.value.length - 1];
+      if (selectOtherCity) {
+        otherBtn.otherSelected = true;
+        otherBtn.selected = true;
+        otherBtn.label = city.label;
+      }
+      if (!selectOtherCity && !clickOthers) {
+        otherBtn.otherSelected = false;
+        otherBtn.label = '其他';
+      }
     }
     onMounted(() => {
       console.log('mounted_');
@@ -161,7 +185,10 @@ const app = createApp({
       seeDetail,
       goToSearchPage,
       showAllCities,
-      toggleShowAllCities,
+
+      cities,
+      otherCities,
+      selectCity,
     };
   }
 });

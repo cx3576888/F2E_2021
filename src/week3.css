@@ -111,6 +111,14 @@ header, footer {
   padding-left: 8px;
   margin-bottom: 15px;
 }
+.other-selected {
+  color: #AEB2B0;
+  font-size: 12px;
+  position: absolute;
+  top: -16px;
+  left: 50%;
+  transform: translateX(-50%);
+}
 .city-btns {
   margin-bottom: 30px;
   justify-content: space-between;
