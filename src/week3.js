@@ -1,7 +1,7 @@
 import jsSHA from 'jssha';
 import axios from 'axios';
-import { createApp } from '@vue/runtime-dom';
-import { createApp } from '../node_modules/vue/dist/vue.esm-browser';
+import { createApp, ref, onMounted } from '../node_modules/vue/dist/vue.esm-browser';
+import L from 'leaflet';
 
 // https://github.com/ptxmotc/Sample-code/blob/master/Node.js/sample.js
 const getAuthorizationHeader = function () {
@@ -102,7 +102,6 @@ const getTimes = function (city, routeName) {
   UpdateTime // 本平台資料更新時間(ISO8601格式:yyyy-MM-ddTHH:mm:sszzz)
 }
 
-
 const getDetail = function (city, routeName) {
   const url = `/Route/City/${city}/${routeName}`;
   const params = {
@@ -131,13 +130,49 @@ const getOperator = function (city) {
   OperatorUrl
 }
 
+let map;
+let currPosition = {
+  lat: 25.0408578889,
+  lng: 121.567904444,
+};
 const app = createApp({
-  data() {
+  setup() {
+    const isSearchPage = ref(true);
+    function seeDetail(routeName) {
+      console.log('click ', routeName);
+      isSearchPage.value = false;
+      setTimeout(() => {
+        constructMap();
+      }, 500);
+    }
+    function goToSearchPage() {
+      console.log('go back to search page');
+      isSearchPage.value = true;
+    }
+    const showAllCities = ref(false);
+    function toggleShowAllCities() {
+      showAllCities.value = !showAllCities.value;
+    }
+    onMounted(() => {
+      console.log('mounted_');
+    });
     return {
-      isSearchPage: true,
+      isSearchPage,
+      seeDetail,
+      goToSearchPage,
+      showAllCities,
+      toggleShowAllCities,
     };
-  },
+  }
 });
 app.mount('#app');
 
-
+function constructMap() {
+  map = L.map('map', {
+    center: currPosition,
+    zoom: 17,
+  });
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+  }).addTo(map);
+}
