@@ -1,0 +1,162 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@100;300;400;500;700;900&family=Rubik:wght@300;400;500;600;700;800;900&display=swap');
+/* background */
+.header-container {
+  background-color: white;
+  color: #3D403E;
+}
+.search-page-main-container {
+  background-image: 
+    url('../assets/wave_front.png'),
+    url('../assets/wave_back.png'),
+    linear-gradient(143.04deg, #70EBB0 13.42%, #40CACA 84.3%);
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: bottom;
+}
+.detail-page-main-container {
+  background-color: #E5E5E5;
+}
+.footer-container {
+  background-color: #4D514F;
+  color: #CED0CE;
+}
+
+/* general */
+* {
+  font-family: 'Rubik', 'Noto Sans TC', sans-serif;
+}
+header, main, footer {
+  width: 90vw;
+  margin-left: 50%;
+  transform: translateX(-50%);
+}
+.row {
+  display: flex;
+}
+.row-rightmost {
+  margin-left: auto;
+}
+.icon {
+  height: 1em;
+}
+
+/* search page left */
+.search-title {
+  color: white;
+}
+.search-tab-title {
+  background-color: #D4F3F1;
+  color: rgba(30, 55, 63, 0.6);
+}
+.search-tab-title-active {
+  background-color: rgba(255, 255, 255, 0.9);
+  color: #1E373F;
+}
+.search-tab-content {
+  background-color: rgba(255, 255, 255, 0.9);
+}
+.search-field {
+  color: #176057;
+}
+.city-btn {
+  color: #6E7370;
+}
+.city-selected {
+  color: #1E373F;
+}
+
+/* search page right */
+.results-title {
+  color: #6E7370;
+}
+.one-result {
+  background-color: rgba(255, 255, 255, 0.8);
+}
+.result-name {
+  color: #1E373F;
+}
+.result-start-stop {
+  color: #6E7370;
+}
+.result-first-last {
+  color: #8F9491;
+}
+
+/* detail page */
+.detail-title {
+  color: #0B6987;
+}
+.updated-time {
+  color: #4D514F;
+}
+.route-name {
+  color: #2FC3B1;
+  padding-right: 30px;
+  border-right: 2px solid #AEB2B0;
+}
+.route-start-stop {
+  color: #1E373F;
+}
+.btn {
+  color: #2FC3B1;
+}
+
+/* detail page stops */
+.section-title {
+  color: #1E373F;
+}
+.stops-tab-title {
+  background-color: #CEE1DF;
+  color: rgba(30, 55, 63, 0.6);
+}
+.stops-tab-title-active {
+  background-color: white;
+  color: #1E373F;
+}
+.stops-tab-content {
+  background-color: white;
+}
+.one-stop {
+  background-color: rgba(255, 255, 255, 0.6);
+}
+.stop-status {
+  color: white;
+}
+.stop-status-no {
+  background-color: #AEB2B0;
+}
+.stop-status-ing {
+  background-color: #FF7A50;
+}
+.stop-status-soon {
+  background-color: #FFD952;
+  color: #1E373F;
+}
+.stop-status-wait {
+  background-color: #3CC4EF;
+}
+.stop-name {
+  color: #3D403E;
+}
+
+/* detail page map */
+#map {
+}
+
+/* detail page bottom */
+.card-header {
+  background-color: #AFECE4;
+  color: #09536B;
+}
+.card-content-title {
+  color: #4D514F;
+}
+.card-content-text {
+  color: #6E7370;
+}
+
+
+.row > div, .row > span {
+  padding: 5px;
+  border: 1px solid black;
+}

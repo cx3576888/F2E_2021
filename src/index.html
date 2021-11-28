@@ -5,36 +5,172 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Week 2: Bikes</title>
+  <title>Week 3: Bus</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css">
   <link rel="stylesheet" href="../node_modules/leaflet/dist/leaflet.css">
-  <link rel="stylesheet" href="week2.css">
-  <script type="module" src="week2.js"></script>
+  <link rel="stylesheet" href="week3.css">
+  <script type="module" src="week3.js"></script>
 </head>
 
 <body id="app">
-  <div class="borrowReturn">
-    <button :class="['borrowBtn', isBorrow ? 'active' : 'non-active']" :disabled="isBorrow" @click="toggleBorrow()">租車</button>
-    <button :class="['returnBtn', isBorrow ? 'non-active' : 'active']" :disabled="!isBorrow" @click="toggleBorrow()">還車</button>
+  <div class="header-container">
+    <header class="row">
+      <img src="../assets/logo1.png" alt="等等公車">
+      <h2 class="row-rightmost header-title">全台公車整合資訊網</h2>
+    </header>
   </div>
-  <div id="map"></div>
-  <div v-show="showDetail" class="details">
-    <span :class="['ball', status.color]"></span>{{status.text}}
-    <div class="details-name">{{name.Zh_tw}}</div>
-    <div class="lighter">{{name.En}}</div>
-    <div>{{address.Zh_tw}}</div>
-    <div class="lighter">{{address.En}}</div>
-    <div>更新時間：{{updateTime}}</div>
-    <div class="box-row">
-      <span :class="['borrowReturnBox', isBorrow ? 'active' : 'non-active']">
-        <div class="borrowReturnText">可借車輛</div>
-        <div class="borrowReturnNum">{{available.borrow}}</div>
-      </span>
-      <span :class="['borrowReturnBox', isBorrow ? 'non-active' : 'active']">
-        <div class="borrowReturnText">可停車位</div>
-        <div class="borrowReturnNum">{{available.return}}</div>
-      </span>
-    </div>
+  <div class="search-page-main-container">
+    <main v-if="isSearchPage" class="row">
+      <div class="left">
+        <h3 class="search-title">\ 全台公車一次找 /</h3>
+        <div class="search-from">
+          <div class="row">
+            <div class="search-tab-title-active"><img class="icon" src="../assets/icon_bus_smile.png" alt="公車小圖示">找公車
+            </div>
+            <div class="search-tab-title"><img class="icon" src="../assets/icon_bus_stop_dim.png" alt="公車小圖示">找站牌</div>
+            <div class="search-tab-title"><img class="icon" src="../assets/icon_bus_dim.png" alt="公車小圖示">找客運</div>
+          </div>
+          <div class="search-tab-content">
+            <div class="search-field">搭乘城市：</div>
+            <div class="row">
+              <div class="city-btn city-selected"><img class="icon" src="../assets/icon_checked.png" alt="已選擇">台北</div>
+              <div class="city-btn">台中</div>
+              <div class="city-btn">高雄</div>
+              <div class="city-btn">台南</div>
+              <div class="city-btn city-btn-others">其他
+                <div class="city-btn-more">
+                  <div class="city-btn-other">新竹縣</div>
+                  <div class="city-btn-other">苗栗縣</div>
+                  <div class="city-btn-other">彰化縣</div>
+                  <div class="city-btn-other">南投縣</div>
+                  <div class="city-btn-other">雲林縣</div>
+                  <div class="city-btn-other">嘉義縣</div>
+                  <div class="city-btn-other">嘉義市</div>
+                  <div class="city-btn-other">屏東縣</div>
+                  <div class="city-btn-other">宜蘭縣</div>
+                  <div class="city-btn-other">花蓮縣</div>
+                </div>
+              </div>
+            </div>
+            <div class="search-field">公車號碼：</div>
+            <input type="text" placeholder="搜尋站牌名稱">
+          </div>
+        </div>
+      </div>
+      <div class="search-results">
+        <div class="results-title">公車搜尋結果</div>
+        <div class="row">
+          <div class="row one-result">
+            <div class="result-name">11</div>
+            <div class="row-rightmost result-basics">
+              <div class="result-start-stop">萬華 - 松仁路</div>
+              <div class="result-first-last">06:00 - 22:00</div>
+            </div>
+          </div>
+          <div class="row one-result">
+            <div class="result-name">295</div>
+            <div class="row-rightmost result-basics">
+              <div class="result-start-stop">捷運動物園站 - 臺北車站</div>
+              <div class="result-first-last">05:30 - 23:00</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+  <div class="detail-page-main-container">
+    <main v-if="isSearchPage">
+      <div class="row">
+        <img class="icon" src="../assets/icon_back.png" alt="回搜尋頁">
+        <h3 class="detail-title">臺北｜22公車</h3>
+        <div class="row-rightmost updated-time">更新時間：23：43：02 30秒後更新</div>
+      </div>
+      <div class="row">
+        <h2>
+          <span class="route-name">22</span>
+          <span class="route-start-stop">衡陽路 - 吳興街</span>
+        </h2>
+        <div class="row-rightmost">
+          <button class="btn btnShare"><img class="icon" src="../assets/icon_share.png" alt="分享小圖示">分享頁面</button>
+          <button class="btn btnRefresh"><img class="icon" src="../assets/icon_refresh.png" alt="重新整理"></button>
+        </div>
+      </div>
+      <section class="stopsInfo">
+        <div class="section-title">公車動態</div>
+        <div class="row">
+          <div class="stops-tab-title-active"><img class="icon" src="../assets/icon_bus.png" alt="公車小圖示">往 衡陽路</div>
+          <div class="stops-tab-title"><img class="icon" src="../assets/icon_bus.png" alt="公車小圖示">往 吳興街</div>
+        </div>
+        <div class="row stops-tab-content">
+          <div class="stops">
+            <div class="row one-stop">
+              <div class="stop-status stop-status-no">尚未發車</div>
+              <div class="stop-name">吳興街站</div>
+            </div>
+            <div class="row one-stop">
+              <div class="stop-status stop-status-no">尚未發車</div>
+              <div class="stop-name">吳興街站</div>
+            </div>
+            <div class="row one-stop">
+              <div class="stop-status stop-status-ing">進站中</div>
+              <div class="stop-name">吳興國小(松仁)</div>
+            </div>
+            <div class="row one-stop">
+              <div class="stop-status stop-status-soon">即將進站</div>
+              <div class="stop-name">信義國中(莊敬)</div>
+            </div>
+            <div class="row one-stop">
+              <div class="stop-status stop-status-soon">即將進站</div>
+              <div class="stop-name">臺北醫學大學</div>
+            </div>
+            <div class="row one-stop">
+              <div class="stop-status stop-status-wait">13 分鐘</div>
+              <div class="stop-name">景新里</div>
+            </div>
+            <div class="row one-stop">
+              <div class="stop-status stop-status-wait">40 分鐘</div>
+              <div class="stop-name">世貿中心(莊敬)</div>
+            </div>
+          </div>
+          <div id="map"></div>
+        </div>
+      </section>
+      <section class="routeInfo">
+        <div class="section-title">路線資訊</div>
+        <div class="row">
+          <div class="card">
+            <div class="card-header">發車資訊</div>
+            <div class="card-content">
+              <div class="card-content-title">頭末班車 :</div>
+              <div class="card-content-text">平日：0530~2300</div>
+              <div class="card-content-text">假日：0540~2300</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">票價資訊</div>
+            <div class="card-content">
+              <div class="card-content-title">收費方式 :</div>
+              <div class="card-content-text">一段票，每段 15元</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">服務客運</div>
+            <div class="card-content">
+              <div class="card-content-title">客運業者 :</div>
+              <div class="card-content-text">大都會客運</div>
+              <div class="card-content-title">聯繫電話 :</div>
+              <div class="card-content-text">0800-053-434</div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+  <div class="footer-container">
+    <footer class="row">
+      <img src="../assets/logo1_light.png" alt="等等公車">
+      <div class="row-rightmost">全台公車動態時刻查詢應用服務，本網站 The F2E所有，Copyright©2021</div>
+    </footer>
   </div>
 </body>
 
