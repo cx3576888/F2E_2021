@@ -27,38 +27,37 @@
           <div class="search-tab-title clickable search-tab-title-active">
             <img class="icon" src="../assets/icon_bus_smile.png" alt="公車小圖示">找公車
           </div>
-          <div class="search-tab-title clickable"><img class="icon" src="../assets/icon_bus_stop_dim.png" alt="公車小圖示">找站牌</div>
-          <div class="search-tab-title clickable"><img class="icon" src="../assets/icon_bus_dim.png" alt="公車小圖示">找客運
+          <div class="search-tab-title clickable">
+            <img class="icon" src="../assets/icon_bus_stop_dim.png" alt="公車小圖示">找站牌
+          </div>
+          <div class="search-tab-title clickable">
+            <img class="icon" src="../assets/icon_bus_dim.png" alt="公車小圖示">找客運
           </div>
         </div>
         <div class="search-tab-content">
           <div class="search-field">搭乘城市：</div>
           <div class="row city-btns">
-            <div v-for="city in cities" :key="city.id"
-              @click="selectCity(city, false)"
-              :class="['city-btn', 'clickable', 'city-btn-square', {'city-selected': city.selected}]"
-            >{{city.label}}
+            <div v-for="city in cities" :key="city.id" @click="selectCity(city, false)"
+              :class="['city-btn', 'clickable', 'city-btn-square', {'city-selected': city.selected}]">{{city.label}}
               <div v-if="city.otherSelected" class="other-selected">其他</div>
-              <img v-if="city.selected && city.otherSelected !== false" class="icon" src="../assets/icon_checked.png" alt="已選擇">
+              <img v-if="city.selected && city.otherSelected !== false" class="icon" src="../assets/icon_checked.png"
+                alt="已選擇">
             </div>
           </div>
           <div class="row city-btns city-more" v-if="showAllCities">
-            <div v-for="city in otherCities" :key="city.id"
-              @click="selectCity(city, true)"
-              :class="['city-btn', 'clickable', {'city-selected': city.selected}]"
-            >{{city.label}}
+            <div v-for="city in otherCities" :key="city.id" @click="selectCity(city, true)"
+              :class="['city-btn', 'clickable', {'city-selected': city.selected}]">{{city.label}}
             </div>
           </div>
           <div class="search-field">公車號碼：</div>
-          <input v-model.trim="searchString" @input="inputChanged"
-            type="text" class="search-input" placeholder="搜尋站牌名稱">
+          <input v-model.trim="searchString" @input="inputChanged" type="text" class="search-input"
+            placeholder="搜尋站牌名稱">
         </div>
       </div>
       <div class="search-results row-rightmost">
         <div class="results-title">公車搜尋結果</div>
         <div class="row result-row">
-          <div v-for="res in searchResults" :key="res.RouteUID"
-            @click="seeDetail(res.RouteUID)"
+          <div v-for="res in searchResults" :key="res.RouteUID" @click="seeDetail(res.RouteName.Zh_tw)"
             class="row one-result clickable">
             <div class="result-name">{{res.RouteName.Zh_tw}}</div>
             <div class="row-rightmost result-basics">
@@ -74,12 +73,12 @@
     <main>
       <div class="row detail-header">
         <img class="icon clickable" @click="goToSearchPage" src="../assets/icon_back.png" alt="回搜尋頁">
-        <h3 class="detail-header-title">臺北｜22公車</h3>
-        <div class="row-rightmost updated-time">更新時間：23：43：02，30秒後更新</div>
+        <h3 class="detail-header-title">{{detail.CityZh}}｜{{detail.RouteName.Zh_tw}}公車</h3>
+        <div class="row-rightmost updated-time">更新時間：{{detail.dataTime}}，30秒後更新</div>
       </div>
       <div class="row route-title">
-        <h2 class="route-name">22</h2>
-        <h2 class="route-start-stop">衡陽路 - 吳興街</h2>
+        <h2 class="route-name">{{detail.RouteName.Zh_tw}}</h2>
+        <h2 class="route-start-stop">{{detail.DepartureStopNameZh}} - {{detail.DestinationStopNameZh}}</h2>
         <div class="row-rightmost">
           <button class="btn clickable btn-share">
             <img class="icon" src="../assets/icon_share.png" alt="分享小圖示">分享頁面
@@ -92,40 +91,20 @@
       <section class="stopsInfo">
         <div class="section-title">公車動態</div>
         <div class="row">
-          <div class="stops-tab-title clickable stops-tab-title-active">
-            <img class="icon" src="../assets/icon_bus.png" alt="公車小圖示">往 衡陽路
+          <div :class="['stops-tab-title', 'clickable', {'stops-tab-title-active': detail.isGoBus}]"
+            @click="toggleIsGo(true)">
+            <img class="icon" src="../assets/icon_bus.png" alt="公車小圖示">往 {{detail.DestinationStopNameZh}}
           </div>
-          <div class="stops-tab-title clickable"><img class="icon" src="../assets/icon_bus.png" alt="公車小圖示">往 吳興街</div>
+          <div :class="['stops-tab-title', 'clickable', {'stops-tab-title-active': !detail.isGoBus}]"
+            @click="toggleIsGo(false)">
+            <img class="icon" src="../assets/icon_bus.png" alt="公車小圖示">往 {{detail.DepartureStopNameZh}}
+          </div>
         </div>
         <div class="row stops-tab-content">
           <div class="stops">
-            <div class="row one-stop">
-              <div class="stop-status stop-status-no">尚未發車</div>
-              <div class="stop-name">吳興街站</div>
-            </div>
-            <div class="row one-stop">
-              <div class="stop-status stop-status-no">尚未發車</div>
-              <div class="stop-name">吳興街站</div>
-            </div>
-            <div class="row one-stop">
-              <div class="stop-status stop-status-ing">進站中</div>
-              <div class="stop-name">吳興國小(松仁)</div>
-            </div>
-            <div class="row one-stop">
-              <div class="stop-status stop-status-soon">即將進站</div>
-              <div class="stop-name">信義國中(莊敬)</div>
-            </div>
-            <div class="row one-stop">
-              <div class="stop-status stop-status-soon">即將進站</div>
-              <div class="stop-name">臺北醫學大學</div>
-            </div>
-            <div class="row one-stop">
-              <div class="stop-status stop-status-wait">13 分鐘</div>
-              <div class="stop-name">景新里</div>
-            </div>
-            <div class="row one-stop">
-              <div class="stop-status stop-status-wait">40 分鐘</div>
-              <div class="stop-name">世貿中心(莊敬)</div>
+            <div class="row one-stop" v-for="stop in stopsNow" :key="stop.StopUID">
+              <div :class="stop.statusClass">{{stop.StopStatusZh}}</div>
+              <div class="stop-name">{{stop.StopName.Zh_tw}}</div>
             </div>
           </div>
           <div id="map" class="row-rightmost"></div>
@@ -138,24 +117,24 @@
             <div class="card-header">發車資訊</div>
             <div class="card-content">
               <div class="card-content-title">頭末班車 :</div>
-              <div class="card-content-text">平日：0530~2300</div>
-              <div class="card-content-text">假日：0540~2300</div>
+              <div class="card-content-text">平日：{{detail.firstLast}}</div>
+              <div class="card-content-text">假日：{{detail.holidayFirstLast}}</div>
             </div>
           </div>
           <div class="card">
             <div class="card-header">票價資訊</div>
             <div class="card-content">
               <div class="card-content-title">收費方式 :</div>
-              <div class="card-content-text">一段票，每段 15元</div>
+              <div class="card-content-text">{{detail.TicketPriceDescriptionZh || '未提供'}}</div>
             </div>
           </div>
           <div class="card">
             <div class="card-header">服務客運</div>
             <div class="card-content">
               <div class="card-content-title">客運業者 :</div>
-              <div class="card-content-text">大都會客運</div>
+              <div class="card-content-text">{{detail.Operators[0].OperatorName.Zh_tw}}</div>
               <div class="card-content-title">聯繫電話 :</div>
-              <div class="card-content-text">0800-053-434</div>
+              <div class="card-content-text">{{detail.operatorTel}}</div>
             </div>
           </div>
         </div>

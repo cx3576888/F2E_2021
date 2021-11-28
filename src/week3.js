@@ -23,6 +23,14 @@ const busApi = axios.create({
   headers: getAuthorizationHeader(),
 });
 
+const getOperators = function (city) {
+  const url = `/Operator/City/${city}`;
+  const params = {
+    $format: 'JSON',
+  };
+  return busApi.get(url, { params: params });
+}
+
 const getList = function (city, includeContain, searchStr) {
   const url = `/Route/City/${city}`;
   const params = {
@@ -31,50 +39,6 @@ const getList = function (city, includeContain, searchStr) {
     $format: 'JSON',
   };
   return busApi.get(url, { params: params });
-  RouteName.Zh_tw
-  DepartureStopNameZh
-  DestinationStopNameZh
-  TicketPriceDescriptionZh // for detail page
-  SubRoutes.SubRouteName.Zh_tw
-  SubRoutes.Direction // [0:'去程',1:'返程',2:'迴圈',255:'未知'] 
-  SubRoutes.FirstBusTime
-  SubRoutes.LastBusTime
-  SubRoutes.HolidayFirstBusTime // for detail page
-  SubRoutes.HolidayLastBusTime // for detail page
-}
-
-const getStops = function (city, routeName) {
-  const url = `/StopOfRoute/City/${city}/${routeName}`;
-  const params = {
-    $filter: `RouteName/Zh_tw eq '${routeName}'`,
-    $format: 'JSON',
-  };
-  return busApi.get(url, { params: params });
-  Stops.StopUID
-  Stops.StopName.Zh_tw
-  Stops.StopSequence // may not use
-  Stops.StopPosition.PositionLon
-  Stops.StopPosition.PositionLat
-}
-
-const getTimes = function (city, routeName) {
-  const url = `/EstimatedTimeOfArrival/City/${city}/${routeName}`;
-  const params = {
-    $filter: `RouteName/Zh_tw eq '${routeName}'`,
-    $format: 'JSON',
-  };
-  return busApi.get(url, { params: params });
-  StopUID
-  StopName.Zh_tw
-  PlateNumb // 車牌號碼 [値為値為-1時，表示目前該站位無車輛行駛] // response都沒看到這個欄位
-  Direction // [0:'去程',1:'返程',2:'迴圈',255:'未知'] 
-  // 去返程(該方向指的是此車牌車輛目前所在路線的去返程方向，非指站站牌所在路線的去返程方向，使用時請加值業者多加注意)
-  StopStatus // [0:'正常',1:'尚未發車',2:'交管不停靠',3:'末班車已過',4:'今日未營運']
-  EstimateTime //到站時間預估(秒) 
-  // 當StopStatus値為2~4或PlateNumb値為-1時，EstimateTime値為null;
-  // 當StopStatus値為1時，EstimateTime値多數為null，僅部分路線因有固定發車時間，故EstimateTime有値;
-  // 當StopStatus値為0時，EstimateTime有値。
-  UpdateTime // 本平台資料更新時間(ISO8601格式:yyyy-MM-ddTHH:mm:sszzz)
 }
 
 const getDetail = function (city, routeName) {
@@ -84,25 +48,25 @@ const getDetail = function (city, routeName) {
     $format: 'JSON',
   };
   return busApi.get(url, { params: params });
-  FirstBusTime
-  LastBusTime
-  HolidayFirstBusTime
-  HolidayLastBusTime
-  TicketPriceDescriptionZh
-  OperatorName.Zh_tw
-  OperatorID
 }
 
-const getOperator = function (city) {
-  const url = `/Operator/City/${city}`;
+const getStops = function (city, routeName) {
+  const url = `/StopOfRoute/City/${city}/${routeName}`;
   const params = {
+    $filter: `RouteName/Zh_tw eq '${routeName}'`,
     $format: 'JSON',
   };
   return busApi.get(url, { params: params });
-  OperatorName.Zh_tw
-  OperatorID
-  OperatorPhone
-  OperatorUrl
+}
+
+const getTimes = function (city, routeName) {
+  const url = `/EstimatedTimeOfArrival/City/${city}/${routeName}`;
+  const params = {
+    $filter: `RouteName/Zh_tw eq '${routeName}'`,
+    $orderby: 'StopID asc',
+    $format: 'JSON',
+  };
+  return busApi.get(url, { params: params });
 }
 
 let map;
@@ -112,19 +76,16 @@ let currPosition = {
 };
 const app = createApp({
   setup() {
+    // search page or detail page
     const isSearchPage = ref(true);
     function seeDetail(routeName) {
-      console.log('click ', routeName);
-      isSearchPage.value = false;
-      setTimeout(() => {
-        constructMap();
-      }, 500);
+      initDetail(routeName);
     }
     function goToSearchPage() {
-      console.log('go back to search page');
       isSearchPage.value = true;
     }
 
+    // city selection
     const showAllCities = ref(false);
     const allCities = ref([
       { id: 1, value: 'Taipei', label: '臺北市', defaultShow: true, selected: true },
@@ -152,12 +113,8 @@ const app = createApp({
       { id: -1, value: 'others', label: '其他', defaultShow: true, otherSelected: false },
     ]);
     let selectedCity = allCities.value[0];
-    const cities = computed(() => {
-      return allCities.value.filter(c => c.defaultShow);
-    });
-    const otherCities = computed(() => {
-      return allCities.value.filter(c => !c.defaultShow);
-    });
+    const cities = computed(() => allCities.value.filter(c => c.defaultShow));
+    const otherCities = computed(() => allCities.value.filter(c => !c.defaultShow));
     function selectCity(city, selectOtherCity) {
       const clickOthers = city.id === -1;
       allCities.value.forEach(c => c.selected = false);
@@ -175,6 +132,7 @@ const app = createApp({
         showAllCities.value = false;
         selectedCity = city;
         doSearch();
+        storeOperators();
       }
       const otherBtn = allCities.value[allCities.value.length - 1];
       if (selectOtherCity) {
@@ -187,8 +145,23 @@ const app = createApp({
         otherBtn.label = '其他';
       }
     }
-    const searchString = ref('');
+    const operatorsData = {};
+    function storeOperators() {
+      if (!operatorsData.hasOwnProperty(selectedCity.value)) {
+        getOperators(selectedCity.value)
+          .then(response => {
+            response.data.forEach(opr => {
+              const key = opr.OperatorID;
+              operatorsData[key] = opr;
+            });
+            operatorsData[selectedCity.value] = 'done';
+          })
+      }
+    }
+
+    // search string and results
     let searchDebounce;
+    const searchString = ref('');
     const searchResults = ref([]);
     function inputChanged() {
       clearTimeout(searchDebounce);
@@ -203,35 +176,80 @@ const app = createApp({
       getList(selectedCity.value, false, searchString.value)
         .then(response => {
           response.data.forEach(bus => {
-            bus.firstLast = timeFormat(bus.SubRoutes[0]);
+            bus.firstLast = resultTimeFormat(bus.SubRoutes[0]);
           });
           searchResults.value = response.data;
         })
     }
-    function timeFormat(subRoute) {
-      const first = subRoute.FirstBusTime;
-      const last = subRoute.LastBusTime;
-      if (!first || !last) {
-        return '點擊查看詳細資料';
-      } else {
-        return `${first.slice(0, 2)}:${first.slice(2, 4)} - ${last.slice(0, 2)}:${last.slice(2, 4)}`;
-      }
+
+    // detail page
+    const detail = ref({});
+    const stops = ref([]);
+    const stopsNow = computed(() => {
+      const dirMatch = detail.value.isGoBus ? 0 : 1;
+      const dirStops = stops.value.find(bus => bus.Direction === dirMatch).Stops;
+      return dirStops.sort((a, b) => a.StopSequence - b.StopSequence);
+    });
+    function toggleIsGo(isGo) {
+      detail.value.isGoBus = isGo;
+    }
+    function initDetail(routeName) {
+      Promise.all([
+        getDetail(selectedCity.value, routeName),
+        getStops(selectedCity.value, routeName),
+        getTimes(selectedCity.value, routeName),
+      ])
+        .then(([detailResponse, stopsResponse, timesResponse]) => {
+          detail.value = detailResponse.data[0];
+          detail.value.CityZh = allCities.value.find(c => c.value === detail.value.City).label;
+          detail.value.dataTime = updatedTimeFormat(timesResponse.data[0].UpdateTime);
+          detail.value.isGoBus = true;
+          detail.value.firstLast = detailTimeFormat(detail.value.SubRoutes[0], false);
+          detail.value.holidayFirstLast = detailTimeFormat(detail.value.SubRoutes[0], true);
+          const operatorInfo = operatorsData[detail.value.Operators[0].OperatorID];
+          detail.value.operatorTel = operatorInfo.OperatorPhone;
+
+          stops.value = stopsResponse.data;
+          stops.value.forEach(dir => {
+            dir.Stops.forEach(st => {
+              const timeInfo = timesResponse.data.find(t => t.StopUID === st.StopUID);
+              for (const key in timeInfo) {
+                if (!st.hasOwnProperty(key)) {
+                  st[key] = timeInfo[key];
+                }
+              }
+              const displayProps = getStatusDisplay(st);
+              st.StopStatusZh = displayProps.display;
+              st.statusClass = displayProps.classNames;
+            });
+          });
+          isSearchPage.value = false;
+
+          setTimeout(() => {
+            constructMap();
+          }, 500);
+        })
     }
     onMounted(() => {
-      console.log('mounted_');
+      storeOperators();
     });
     return {
       isSearchPage,
       seeDetail,
       goToSearchPage,
-      showAllCities,
 
+      showAllCities,
       cities,
       otherCities,
       selectCity,
+
       searchString,
       searchResults,
       inputChanged,
+
+      detail,
+      stopsNow,
+      toggleIsGo,
     };
   }
 });
@@ -245,4 +263,67 @@ function constructMap() {
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
   }).addTo(map);
+}
+
+// helper functions
+function resultTimeFormat(subRoute) {
+  const first = subRoute.FirstBusTime;
+  const last = subRoute.LastBusTime;
+  if (!first || !last) {
+    return '點擊查看詳細資料';
+  } else {
+    return `${first.slice(0, 2)}:${first.slice(2, 4)} - ${last.slice(0, 2)}:${last.slice(2, 4)}`;
+  }
+}
+
+function updatedTimeFormat(time) {
+  const idx = time.indexOf('T');
+  return time.slice(idx + 1, idx + 9);
+}
+
+function detailTimeFormat(subRoute, holiday) {
+  const first = holiday ? subRoute.FirstBusTime : subRoute.HolidayFirstBusTime;
+  const last = holiday ? subRoute.LastBusTime : subRoute.HolidayLastBusTime;
+  if (!first || !last) {
+    return '未提供';
+  } else {
+    return `${first}~${last}`;
+  }
+}
+
+function getStatusDisplay(stop) {
+  let display;
+  let classNames = ['stop-status'];
+  switch (stop.StopStatus) {
+    case 0:
+      const sec = stop.EstimateTime;
+      if (sec <= 90) {
+        display = '進站中';
+        classNames.push('stop-status-ing');
+      } else if (sec <= 150) {
+        display = '即將進站';
+        classNames.push('stop-status-soon');
+      } else {
+        display = `${Math.floor(sec / 60)} 分鐘`;
+        classNames.push('stop-status-wait');
+      }
+      break;
+    case 1:
+      display = '尚未發車';
+      classNames.push('stop-status-no');
+      break;
+    case 2:
+      display = '交管不停靠';
+      classNames.push('stop-status-no');
+      break;
+    case 3:
+      display = '末班車已過';
+      classNames.push('stop-status-no');
+      break;
+    case 4:
+      display = '今日未營運';
+      classNames.push('stop-status-no');
+      break;
+  }
+  return { display, classNames };
 }
