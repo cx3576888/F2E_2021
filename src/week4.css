@@ -1,0 +1,9 @@
+.active {
+  background-color: pink;
+}
+.type-button {
+  display: inline-block;
+  cursor: pointer;
+  padding: 5px 20px;
+  border: 1px solid red
+}

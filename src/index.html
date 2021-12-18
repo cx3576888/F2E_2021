@@ -5,148 +5,43 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Week 3: Bus</title>
+  <title>Week 4: Report</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css">
-  <link rel="stylesheet" href="../node_modules/leaflet/dist/leaflet.css">
-  <link rel="stylesheet" href="week3.css">
-  <script type="module" src="week3.js"></script>
+  <link rel="stylesheet" href="week4.css">
+  <script type="module" src="week4.js"></script>
 </head>
 
 <body id="app">
-  <div class="header-container">
-    <header class="row">
-      <img class="clickable" @click="goToSearchPage" src="../assets/logo1.png" alt="等等公車logo">
-      <h2 class="row-rightmost">全台公車整合資訊網</h2>
-    </header>
-  </div>
-  <div v-if="isSearchPage" class="search-page-main-container">
-    <main class="row">
-      <div class="search-from">
-        <h3 class="search-title">\ 全台公車一次找 /</h3>
-        <div class="row">
-          <div class="search-tab-title clickable search-tab-title-active">
-            <img class="icon" src="../assets/icon_bus_smile.png" alt="公車小圖示">找公車
-          </div>
-          <div class="search-tab-title clickable">
-            <img class="icon" src="../assets/icon_bus_stop_dim.png" alt="公車小圖示">找站牌
-          </div>
-          <div class="search-tab-title clickable">
-            <img class="icon" src="../assets/icon_bus_dim.png" alt="公車小圖示">找客運
-          </div>
-        </div>
-        <div class="search-tab-content">
-          <div class="search-field">搭乘城市：</div>
-          <div class="row city-btns">
-            <div v-for="city in cities" :key="city.id" @click="selectCity(city, false)"
-              :class="['city-btn', 'clickable', 'city-btn-square', {'city-selected': city.selected}]">{{city.label}}
-              <div v-if="city.otherSelected" class="other-selected">其他</div>
-              <img v-if="city.selected && city.otherSelected !== false" class="icon" src="../assets/icon_checked.png"
-                alt="已選擇">
-            </div>
-          </div>
-          <div class="row city-btns city-more" v-if="showAllCities">
-            <div v-for="city in otherCities" :key="city.id" @click="selectCity(city, true)"
-              :class="['city-btn', 'clickable', {'city-selected': city.selected}]">{{city.label}}
-            </div>
-          </div>
-          <div class="search-field">公車號碼：</div>
-          <input v-model.trim="searchString" @input="inputChanged" type="text" class="search-input"
-            placeholder="搜尋站牌名稱">
-        </div>
-      </div>
-      <div class="search-results row-rightmost">
-        <div class="results-title">公車搜尋結果</div>
-        <div class="row result-row">
-          <div v-for="res in searchResults" :key="res.RouteUID" @click="seeDetail(res.RouteName.Zh_tw)"
-            class="row one-result clickable">
-            <div class="result-name">{{res.RouteName.Zh_tw}}</div>
-            <div class="row-rightmost result-basics">
-              <div class="result-start-stop">{{res.DepartureStopNameZh}} - {{res.DestinationStopNameZh}}</div>
-              <div class="result-first-last">{{res.firstLast}}</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </main>
-  </div>
-  <div v-if="!isSearchPage" class="detail-page-main-container">
-    <main>
-      <div class="row detail-header">
-        <img class="icon clickable" @click="goToSearchPage" src="../assets/icon_back.png" alt="回搜尋頁">
-        <h3 class="detail-header-title">{{detail.CityZh}}｜{{detail.RouteName.Zh_tw}}公車</h3>
-        <div class="row-rightmost updated-time">更新時間：{{detail.dataTime}}，30秒後更新</div>
-      </div>
-      <div class="row route-title">
-        <h2 class="route-name">{{detail.RouteName.Zh_tw}}</h2>
-        <h2 class="route-start-stop">{{detail.DepartureStopNameZh}} - {{detail.DestinationStopNameZh}}</h2>
-        <div class="row-rightmost">
-          <button class="btn clickable btn-share">
-            <img class="icon" src="../assets/icon_share.png" alt="分享小圖示">分享頁面
-          </button>
-          <button class="btn clickable btn-refresh">
-            <img class="icon" src="../assets/icon_refresh.png" alt="重新整理">
-          </button>
-        </div>
-      </div>
-      <section class="stopsInfo">
-        <div class="section-title">公車動態</div>
-        <div class="row">
-          <div :class="['stops-tab-title', 'clickable', {'stops-tab-title-active': detail.isGoBus}]"
-            @click="toggleIsGo(true)">
-            <img class="icon" src="../assets/icon_bus.png" alt="公車小圖示">往 {{detail.DestinationStopNameZh}}
-          </div>
-          <div :class="['stops-tab-title', 'clickable', {'stops-tab-title-active': !detail.isGoBus}]"
-            @click="toggleIsGo(false)">
-            <img class="icon" src="../assets/icon_bus.png" alt="公車小圖示">往 {{detail.DepartureStopNameZh}}
-          </div>
-        </div>
-        <div class="row stops-tab-content">
-          <div class="stops">
-            <div class="row one-stop" v-for="stop in stopsNow" :key="stop.StopUID">
-              <div :class="stop.statusClass">{{stop.StopStatusZh}}</div>
-              <div class="stop-name">{{stop.StopName.Zh_tw}}</div>
-            </div>
-          </div>
-          <div id="map" class="row-rightmost"></div>
-        </div>
-      </section>
-      <section class="routeInfo">
-        <div class="section-title">路線資訊</div>
-        <div class="row card-row">
-          <div class="card">
-            <div class="card-header">發車資訊</div>
-            <div class="card-content">
-              <div class="card-content-title">頭末班車 :</div>
-              <div class="card-content-text">平日：{{detail.firstLast}}</div>
-              <div class="card-content-text">假日：{{detail.holidayFirstLast}}</div>
-            </div>
-          </div>
-          <div class="card">
-            <div class="card-header">票價資訊</div>
-            <div class="card-content">
-              <div class="card-content-title">收費方式 :</div>
-              <div class="card-content-text">{{detail.TicketPriceDescriptionZh || '未提供'}}</div>
-            </div>
-          </div>
-          <div class="card">
-            <div class="card-header">服務客運</div>
-            <div class="card-content">
-              <div class="card-content-title">客運業者 :</div>
-              <div class="card-content-text">{{detail.Operators[0].OperatorName.Zh_tw}}</div>
-              <div class="card-content-title">聯繫電話 :</div>
-              <div class="card-content-text">{{detail.operatorTel}}</div>
-            </div>
-          </div>
-        </div>
-      </section>
-    </main>
-  </div>
-  <div class="footer-container">
-    <footer class="row">
-      <img src="../assets/logo1_light.png" alt="等等公車">
-      <div class="row-rightmost">全台公車動態時刻查詢應用服務，本網站 The F2E所有，Copyright©2021</div>
-    </footer>
-  </div>
+  <header>
+    <h1>2021薪資數據圖表調查</h1>
+  </header>
+  <aside>
+    <ul>職位
+      <li v-for="job in jobs" :key="job.id">
+        <label>
+          <input type="checkbox" v-model="job.checked">{{ job.value }}
+        </label>
+      </li>
+    </ul>
+    <ul>分類依據
+      <li v-for="factor in factors" :key="factor.id">
+        <label>
+          <input type="checkbox" v-model="factor.checked">{{ factor.value }}
+        </label>
+      </li>
+    </ul>
+  </aside>
+  <main>
+    <ul>
+      <li v-for="type in types" :key="type.id"
+        :class="['type-button', {active: type.active}]"
+        @click="changeType(type)"
+      >
+        {{ type.value }}
+      </li>
+    </ul>
+    <canvas id="myChart"></canvas>
+  </main>
 </body>
 
 </html>
