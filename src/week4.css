@@ -1,13 +1,77 @@
-.active {
-  background-color: pink;
+h1 {
+  font-size: 32px;
+  text-align: center;
+  padding: 8px 0;
 }
-.disabled {
+.container {
+  display: flex;
+  flex-wrap: wrap;
+}
+aside {
+  width: 100%;
+}
+main {
+  width: 100%;
+}
+@media (min-width: 768px) {
+  aside {
+    width: 30%;
+  }
+  main {
+    width: 70%;
+  }
+}
+
+.type-button-container {
+  display: flex;
+  justify-content: center;
+}
+.type-button {
+  cursor: pointer;
+  font-size: 20px;
+  padding: 5px 20px;
+  border: 1px solid green;
+}
+.type-button.active {
+  background-color: lightgreen;
+}
+.type-button.disabled {
   cursor: default;
   color: gray;
 }
-.type-button {
-  display: inline-block;
-  cursor: pointer;
-  padding: 5px 20px;
-  border: 1px solid red
+
+.group {
+  border: 1px solid black;
+  margin-bottom: 8px;
+  display: flex;
+  flex-wrap: wrap;
+}
+.group-title {
+  font-size: 20px;
+  width: 100%;
+  text-align: center;
+}
+.chkbox {
+  width: 100%;
+  white-space: nowrap;
+  overflow-x: hidden;
+  text-overflow: ellipsis;
+}
+@media (min-width: 576px) and (max-width: 767px) {
+  .chkbox {
+    width: 50%;
+  }
+}
+
+.no-data {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 30vh;
+  font-size: 28px;
+}
+@media (min-width: 768px) {
+  .no-data {
+    height: 100vh;
+  }
 }

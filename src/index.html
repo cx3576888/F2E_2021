@@ -15,35 +15,39 @@
   <header>
     <h1>2021薪資數據圖表調查</h1>
   </header>
-  <aside>
-    <ul>職位
-      <li v-for="job in jobs" :key="job.id">
-        <label>
-          <input type="checkbox" v-model="job.checked"
-            :disabled="!initDone"
-            @click="changeData"
-          >{{ job.label }}
-        </label>
-      </li>
-    </ul>
-    <ul>分類依據
-      <li v-for="factor in factors" :key="factor.id">
-        <label>
-          <input type="checkbox" v-model="factor.checked">{{ factor.label }}
-        </label>
-      </li>
-    </ul>
-  </aside>
-  <main>
-    <ul>
-      <li v-for="type in types" :key="type.id"
-        :class="['type-button', {disabled: !initDone, active: selected.type === type.value}]"
-        @click="changeType(type)"
-      >{{ type.label }}
-      </li>
-    </ul>
-    <canvas id="myChart"></canvas>
-  </main>
+  <div class="container">
+    <aside>
+      <ul class="group">
+        <div class="group-title">職位</div>
+        <li v-for="job in jobs" :key="job.id" :class="['chkbox']">
+          <label>
+            <input type="checkbox" v-model="job.checked" :disabled="!initDone" @click="changeData(job)">{{ job.label }}
+          </label>
+        </li>
+      </ul>
+      <ul class="group">
+        <div class="group-title">X座標</div>
+        <li v-for="factor in factors" :key="factor.id" :title="factor.label" class="chkbox">
+          <label>
+            <input type="checkbox" v-model="factor.checked" :disabled="!initDone" @click="changeX(factor)">{{
+            factor.label }}
+          </label>
+        </li>
+      </ul>
+    </aside>
+    <main>
+      <ul class="type-button-container">
+        <li v-for="type in types" :key="type.id"
+          :class="['type-button', {disabled: !initDone, active: selected.type === type.value}]"
+          @click="changeType(type)">{{ type.label }}
+        </li>
+      </ul>
+      <div v-show="noData" class="no-data">
+        <span>查無資料</span>
+      </div>
+      <canvas v-show="!noData" id="myChart"></canvas>
+    </main>
+  </div>
 </body>
 
 </html>
