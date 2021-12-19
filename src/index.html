@@ -19,14 +19,17 @@
     <ul>職位
       <li v-for="job in jobs" :key="job.id">
         <label>
-          <input type="checkbox" v-model="job.checked">{{ job.value }}
+          <input type="checkbox" v-model="job.checked"
+            :disabled="!initDone"
+            @click="changeData"
+          >{{ job.label }}
         </label>
       </li>
     </ul>
     <ul>分類依據
       <li v-for="factor in factors" :key="factor.id">
         <label>
-          <input type="checkbox" v-model="factor.checked">{{ factor.value }}
+          <input type="checkbox" v-model="factor.checked">{{ factor.label }}
         </label>
       </li>
     </ul>
@@ -34,10 +37,9 @@
   <main>
     <ul>
       <li v-for="type in types" :key="type.id"
-        :class="['type-button', {active: type.active}]"
+        :class="['type-button', {disabled: !initDone, active: selected.type === type.value}]"
         @click="changeType(type)"
-      >
-        {{ type.value }}
+      >{{ type.label }}
       </li>
     </ul>
     <canvas id="myChart"></canvas>

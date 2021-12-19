@@ -1,6 +1,10 @@
 .active {
   background-color: pink;
 }
+.disabled {
+  cursor: default;
+  color: gray;
+}
 .type-button {
   display: inline-block;
   cursor: pointer;
